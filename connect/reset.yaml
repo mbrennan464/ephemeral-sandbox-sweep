@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: reset-connect-db
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: dockerhub
+      containers:
+        - name: apollo-api
+          image: factominc/apiplus_api:v1.0.16-rc7
+          command: ["sh", "-c"]
+          args: ["APIPLUS_CMD_CONFIRMED='1' bin/apiplus command Elixir.Factom.ApiPlus.ReleaseTasks reset"]
+          # command: ["tail", "-f", "/dev/null"]
+          env:
+            - name: APIPLUS_DB_USERNAME
+              value: postgres
+            - name: APIPLUS_DB_HOST
+              value: connect-db-postgresql.pg
+            - name: APIPLUS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: connect-db-postgresql
+                  key: postgresql-password
+            - name: APIPLUS_DB_NAME
+              value: connect
+            - name: APIPLUS_EC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ec-keys
+                  key: private-key
+            - name: APIPLUS_EC_KEY_PUBLIC
+              valueFrom:
+                secretKeyRef:
+                  name: ec-keys
+                  key: public-key
+  backoffLimit: 0

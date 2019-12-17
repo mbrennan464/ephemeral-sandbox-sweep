@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: datastore-delete
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: d-wiper
+        image: gcr.io/connect-sandbox-224121/datafctd-wipe
+        env:
+        - name: NAMESPACE
+          value: "fctd"
+      restartPolicy: OnFailure
+  backoffLimit: 4
